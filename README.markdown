@@ -1,10 +1,6 @@
-# The Official raywenderlich.com Swift Style Guide.
+# The Official BlaBlaCar Swift Style Guide.
 
-This style guide is different from others you may see, because the focus is centered on readability for print and the web. We created this style guide to keep the code in our books, tutorials, and starter kits nice and consistent — even though we have many different authors working on the books.
-
-Our overarching goals are conciseness, readability, and simplicity.
-
-Writing Objective-C? Check out our [Objective-C Style Guide](https://github.com/raywenderlich/objective-c-style-guide) too.
+This style guide is based on the raywenderlich.com [Swift Style Guide](https://github.com/raywenderlich/swift-style-guide) and has been updated to match the code style that our iOS team has defined.
 
 ## Table of Contents
 
@@ -23,6 +19,7 @@ Writing Objective-C? Check out our [Objective-C Style Guide](https://github.com/
   * [Minimal Imports](#minimal-imports)
 * [Spacing](#spacing)
 * [Comments](#comments)
+* [Pragma marks](#pragma-marks)
 * [Classes and Structures](#classes-and-structures)
   * [Use of Self](#use-of-self)
   * [Protocol Conformance](#protocol-conformance)
@@ -281,15 +278,14 @@ Keep imports minimal. For example, don't import `UIKit` when importing `Foundati
 
 ## Spacing
 
-* Indent using 2 spaces rather than tabs to conserve space and help prevent line wrapping. Be sure to set this preference in Xcode and in the Project settings as shown below:
+* Indent using 4 spaces rather than tabs to conserve space and help prevent line wrapping. Be sure to set this preference in Xcode and in the Project settings as shown below:
 
   ![Xcode indent settings](screens/indentation.png)
   
   ![Xcode Project settings](screens/project_settings.png)
 
 * Method braces and other braces (`if`/`else`/`switch`/`while` etc.) always open on the same line as the statement but close on a new line.
-* Tip: You can re-indent by selecting some code (or ⌘A to select all) and then Control-I (or Editor\Structure\Re-Indent in the menu). Some of the Xcode template code will have 4-space tabs hard coded, so this is a good way to fix that.
-
+* Tip: You can re-indent by selecting some code (or ⌘A to select all) and then Control-I (or Editor\Structure\Re-Indent in the menu).
 **Preferred:**
 ```swift
 if user.isHappy {
@@ -334,6 +330,36 @@ When they are needed, use comments to explain **why** a particular piece of code
 
 Avoid block comments inline with code, as the code should be as self-documenting as possible. *Exception: This does not apply to those comments used to generate documentation.*
 
+## Pragma marks
+
+When they are needed, use pragma marks to categorize methods according to the work they do.
+Since we want to use pragma marks to group methods the correct synthax is the following: `// MARK: - `
+
+**Example:**
+```swift
+
+    // MARK: - Initializers
+    
+    init() {
+        //...
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - View Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        //...
+    }
+    
+    override func loadView() {
+        view = UIView()
+    }
+```
 
 ## Classes and Structures
 
@@ -351,7 +377,7 @@ Here's an example of a well-styled class definition:
 
 ```swift
 class Circle: Shape {
-  var x: Int, y: Int
+  var x: Int
   var radius: Double
   var diameter: Double {
     get {
@@ -389,7 +415,6 @@ class Circle: Shape {
 The example above demonstrates the following style guidelines:
 
  + Specify types for properties, variables, constants, argument declarations and other statements with a space after the colon but not before, e.g. `x: Int`, and `Circle: Shape`.
- + Define multiple variables and structures on a single line if they share a common purpose / context.
  + Indent getter and setter definitions and property observers.
  + Don't add modifiers such as `internal` when they're already the default. Similarly, don't repeat the access modifier when overriding a method.
 
@@ -459,15 +484,6 @@ func reticulateSplines(spline: [Double]) -> Bool {
 }
 ```
 
-For functions with long signatures, add line breaks at appropriate points and add an extra indent on subsequent lines:
-
-```swift
-func reticulateSplines(spline: [Double], adjustmentFactor: Double,
-    translateConstant: Int, comment: String) -> Bool {
-  // reticulate code goes here
-}
-```
-
 ## Closure Expressions
 
 Use trailing closure syntax only if there's a single closure expression parameter at the end of the argument list. Give the closure parameters descriptive names.
@@ -510,15 +526,15 @@ attendeeList.sort { a, b in
 }
 ```
 
-Chained methods using trailing closures should be clear and easy to read in context. Decisions on spacing, line breaks, and when to use named versus anonymous arguments is left to the discretion of the author. Examples:
+Chained methods using trailing closures should be clear and easy to read in context. Decisions on line breaks, and when to use named versus anonymous arguments is left to the discretion of the author. Examples:
 
 ```swift
 let value = numbers.map { $0 * 2 }.filter { $0 % 3 == 0 }.indexOf(90)
 
 let value = numbers
-   .map {$0 * 2}
-   .filter {$0 > 50}
-   .map {$0 + 10}
+   .map { $0 * 2 }
+   .filter { $0 > 50 }
+   .map { $0 + 10 }
 ```
 
 ## Types
@@ -618,6 +634,16 @@ if let unwrappedSubview = optionalSubview {
 }
 ```
 
+In case of `self` we can't shadow the original name since `self is a protected keywork in Swift. We could use keyword escaping backquotes but it is stated as being a bug in the compiler by Chris Lattner [here](https://lists.swift.org/pipermail/swift-evolution/Week-of-Mon-20160118/007425.html).
+
+**Preferred:**
+```swift
+resource.request().onComplete { [weak self] response in
+  guard let strongSelf = self else { return }
+  strongSelf.updateUI(model)
+}
+```
+
 ### Struct Initializers
 
 Use the native Swift struct initializers rather than the legacy CGGeometry constructors.
@@ -683,17 +709,15 @@ For empty arrays and dictionaries, use type annotation. (For an array or diction
 
 **Preferred:**
 ```swift
-var names: [String] = []
-var lookup: [String: Int] = [:]
-```
-
-**Not Preferred:**
-```swift
 var names = [String]()
 var lookup = [String: Int]()
 ```
 
-**NOTE**: Following this guideline means picking descriptive names is even more important than before.
+** Not Preferred:**
+```swift
+var names: [String] = []
+var lookup: [String: Int] = [:]
+```
 
 
 ### Syntactic Sugar
@@ -936,47 +960,6 @@ if (name == "Hello") {
   print("World")
 }
 ```
-
-## Copyright Statement
-
-The following copyright statement should be included at the top of every source
-file:
-
-    /**
-     * Copyright (c) 2016 Razeware LLC
-     *
-     * Permission is hereby granted, free of charge, to any person obtaining a copy
-     * of this software and associated documentation files (the "Software"), to deal
-     * in the Software without restriction, including without limitation the rights
-     * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-     * copies of the Software, and to permit persons to whom the Software is
-     * furnished to do so, subject to the following conditions:
-     *
-     * The above copyright notice and this permission notice shall be included in
-     * all copies or substantial portions of the Software.
-     *
-     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-     * THE SOFTWARE.
-     */
-
-## Smiley Face
-
-Smiley faces are a very prominent style feature of the raywenderlich.com site! It is very important to have the correct smile signifying the immense amount of happiness and excitement for the coding topic. The closing square bracket `]` is used because it represents the largest smile able to be captured using ASCII art. A closing parenthesis `)` creates a half-hearted smile, and thus is not preferred.
-
-**Preferred:**
-```
-:]
-```
-
-**Not Preferred:**
-```
-:)
-```  
 
 ## Credits
 
